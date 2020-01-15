@@ -27,10 +27,17 @@ struct _SecHandle  hCtxt;
 //  be defined as the name of the computer running the server sample.
 //  TargetName must be defined as the logon name of the user running 
 //  the server program.
-#define ServerName  TEXT("Server_Computer_Name")
-#define TargetName  TEXT("Server_User_Logon_Name")
+//#define ServerName  TEXT("Server_Computer_Name")
+//#define TargetName  TEXT("Server_User_Logon_Name")
 
-void main()
+#define DefaultServerName  TEXT("192.168.1.1")
+#define DefaultTargetName  TEXT("sg")
+
+TCHAR       *ServerName;
+TCHAR       *TargetName;
+
+
+void client_main()
 {
 
 	SOCKET            Client_Socket;
@@ -43,7 +50,8 @@ void main()
 	ULONG             cbSecurityTrailer;
 	SecPkgContext_Sizes            SecPkgContextSizes;
 	SecPkgContext_NegotiationInfo  SecPkgNegInfo;
-	BOOL DoAuthentication(SOCKET s);
+	
+//	BOOL DoAuthentication(SOCKET s); // sg1009: What was this statement going to do??
 
 	//-------------------------------------------------------------------
 	//  Initialize the socket and the SSP security package.
@@ -141,6 +149,34 @@ void main()
 	exit(EXIT_SUCCESS);
 }  // end main
 
+
+
+// sg1009: 
+// My new main to allow simple passing of arguments rather than the hard code
+int main(int argc, char* argv[])
+{
+	for (int iArg = 0; iArg < argc; iArg++)
+		printf("Arg%d: %s\n", iArg, argv[iArg]);
+
+	ServerName = DefaultServerName;
+	TargetName = DefaultTargetName;
+	if (argc == 3)
+	{
+		ServerName = argv[1];
+		TargetName = argv[2];
+	}
+	else
+	{
+		printf("Arg 1= ServerComputerName Arg2 = ServerUserLogonName\n");
+	}
+
+
+	client_main();
+
+	return 0;
+}
+
+
    //--------------------------------------------------------------------
    //  ConnectAuthSocket establishes an authenticated socket connection 
    //  with a server and initializes needed security package resources.
@@ -212,7 +248,6 @@ struct _SecHandle *hcText)
 }  // end ConnectAuthSocket 
 
 BOOL DoAuthentication(SOCKET s)
-
 {
 	BOOL        fDone = FALSE;
 	DWORD       cbOut = 0;
@@ -287,7 +322,7 @@ BOOL DoAuthentication(SOCKET s)
 
 	free(pInBuf);
 	free(pOutBuf);
-	return(TRUE);
+	return TRUE;
 }
 
 BOOL GenClientContext(
@@ -758,7 +793,6 @@ BOOL ReceiveBytes(
 
 void MyHandleError(char *s)
 {
-
 	fprintf(stderr, "%s error. Exiting.\n", s);
 	exit(EXIT_FAILURE);
 }
